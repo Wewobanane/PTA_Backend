@@ -1,27 +1,25 @@
 const nodemailer = require('nodemailer');
 
-// Create reusable transporter
-// Supports both simple service-based config (EMAIL_SERVICE, EMAIL_USER, EMAIL_PASSWORD)
-// and detailed SMTP config (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS)
-const transporter = nodemailer.createTransport(
-  process.env.EMAIL_SERVICE
-    ? {
-        service: process.env.EMAIL_SERVICE,
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASSWORD
-        }
-      }
-    : {
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.SMTP_PORT) || 587,
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        }
-      }
-);
+// Create reusable transporter with explicit Gmail SMTP configuration
+// Using port 587 with STARTTLS for better compatibility
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT) || 587,
+  secure: false, // Use STARTTLS (false for port 587, true for port 465)
+  auth: {
+    user: process.env.EMAIL_USER || process.env.SMTP_USER,
+    pass: process.env.EMAIL_PASSWORD || process.env.SMTP_PASS
+  },
+  // Force IPv4 to avoid IPv6 connectivity issues on some hosting platforms
+  family: 4,
+  // Additional options for better reliability
+  tls: {
+    ciphers: 'SSLv3',
+    rejectUnauthorized: false
+  },
+  debug: process.env.NODE_ENV === 'development',
+  logger: process.env.NODE_ENV === 'development'
+});
 
 // Send activation email
 exports.sendActivationEmail = async (email, name, token, role) => {
