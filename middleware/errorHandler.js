@@ -2,8 +2,17 @@ const errorHandler = (err, req, res, next) => {
   let error = { ...err };
   error.message = err.message;
 
-  // Log to console for dev
-  console.error('Error:', err);
+  // Log to console with full details
+  console.error('\n' + '='.repeat(60));
+  console.error('❌ ERROR OCCURRED');
+  console.error('='.repeat(60));
+  console.error('📍 Path:', req.method, req.originalUrl);
+  console.error('🔴 Message:', err.message);
+  console.error('📋 Name:', err.name);
+  if (err.stack) {
+    console.error('📚 Stack:', err.stack);
+  }
+  console.error('='.repeat(60) + '\n');
 
   // Mongoose bad ObjectId
   if (err.name === 'CastError') {

@@ -73,12 +73,21 @@ app.use(cors({
 // Security headers
 app.use(helmet());
 
-// Logging
-if (process.env.NODE_ENV === 'development') {
+// Logging - Enable in all environments
+if (process.env.NODE_ENV === 'production') {
+  // Combined log format for production (includes more details)
+  app.use(morgan('combined'));
+} else {
+  // Dev format for development (colorful and concise)
   app.use(morgan('dev'));
 }
 
-
+// Log all errors
+app.use((err, req, res, next) => {
+  console.error('❌ Error:', err.message);
+  console.error('Stack:', err.stack);
+  next(err);
+});
 
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
