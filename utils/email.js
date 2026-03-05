@@ -1,7 +1,13 @@
 const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 
-// Create reusable transporter with explicit Gmail SMTP configuration
-// Using port 587 with STARTTLS for better compatibility
+// Configure SendGrid if API key is provided
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  console.log('✅ SendGrid email service configured');
+}
+
+// Create nodemailer transporter as fallback (if SendGrid not configured)
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.SMTP_PORT) || 587,
@@ -20,6 +26,28 @@ const transporter = nodemailer.createTransport({
   debug: process.env.NODE_ENV === 'development',
   logger: process.env.NODE_ENV === 'development'
 });
+
+// Helper function to send email via SendGrid or Nodemailer
+const sendEmail = async (mailOptions) => {
+  // Use SendGrid if configured
+  if (process.env.SENDGRID_API_KEY) {
+    const msg = {
+      to: mailOptions.to,
+      from: process.env.SENDGRID_FROM_EMAIL || mailOptions.from,
+      subject: mailOptions.subject,
+      html: mailOptions.html
+    };
+    
+    const info = await sgMail.send(msg);
+    console.log('✅ Email sent via SendGrid');
+    return { success: true, messageId: info[0].headers['x-message-id'] };
+  } else {
+    // Fallback to Nodemailer (Gmail SMTP)
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Email sent via SMTP');
+    return { success: true, messageId: info.messageId };
+  }
+};
 
 // Send activation email
 exports.sendActivationEmail = async (email, name, token, role) => {
@@ -106,9 +134,9 @@ exports.sendActivationEmail = async (email, name, token, role) => {
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
+    const info = await sendEmail(mailOptions);
     console.log('✅ Activation email sent:', info.messageId);
-    return { success: true, messageId: info.messageId };
+    return info;
   } catch (error) {
     console.error('❌ Error sending activation email:', error);
     throw new Error('Failed to send activation email');
@@ -200,9 +228,9 @@ exports.sendPasswordResetEmail = async (email, name, token) => {
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
+    const info = await sendEmail(mailOptions);
     console.log('✅ Password reset email sent:', info.messageId);
-    return { success: true, messageId: info.messageId };
+    return info;
   } catch (error) {
     console.error('❌ Error sending password reset email:', error);
     throw new Error('Failed to send password reset email');
