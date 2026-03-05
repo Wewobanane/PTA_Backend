@@ -115,27 +115,26 @@ app.use(errorHandler);
 // Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`
-╔════════════════════════════════════════════════════════╗
-║                                                        ║
-║   🎓 PTA Management System Server                     ║
-║                                                        ║
-║   Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}      ║
-║   Environment: ${process.env.NODE_ENV || 'development'}                               ║
-║                                                        ║
-║   📡 API Endpoints:                                    ║
-║   - Auth:          /api/auth                          ║
-║   - Admin:         /api/admin                         ║
-║   - Students:      /api/students                      ║
-║   - Behaviors:     /api/behaviors                     ║
-║   - Grades:        /api/grades                        ║
-║   - Attendance:    /api/attendance                    ║
-║   - Communication: /api/communication                 ║
-║                                                        ║
-║   🔌 Socket.io: Ready for real-time communication     ║
-║                                                        ║
-╚════════════════════════════════════════════════════════╝
-  `);
+  const env = process.env.NODE_ENV || 'development';
+  console.log('\n' + '='.repeat(60));
+  console.log('🎓 PTA MANAGEMENT SYSTEM SERVER');
+  console.log('='.repeat(60));
+  console.log(`✅ Server Status: RUNNING`);
+  console.log(`📍 Port: ${PORT}`);
+  console.log(`🌍 Environment: ${env}`);
+  console.log(`🔌 Socket.io: ENABLED`);
+  console.log('-'.repeat(60));
+  console.log('📡 API Endpoints Available:');
+  console.log('   • /api/auth          - Authentication');
+  console.log('   • /api/admin         - Admin Management');
+  console.log('   • /api/users         - User Management');
+  console.log('   • /api/students      - Student Management');
+  console.log('   • /api/behaviors     - Behavior Tracking');
+  console.log('   • /api/grades        - Grade Management');
+  console.log('   • /api/attendance    - Attendance Tracking');
+  console.log('   • /api/communication - Messaging & Announcements');
+  console.log('   • /api/health        - Health Check');
+  console.log('='.repeat(60) + '\n');
 });
 
 // Handle unhandled promise rejections
